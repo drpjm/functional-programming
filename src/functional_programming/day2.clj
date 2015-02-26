@@ -1,6 +1,8 @@
 (ns functional-programming.day2
   (:require [functional-programming.day1 :as day1]
-            [clojure.core.reducers :as r]))
+            [clojure.core.reducers :as r]
+            [clojure.core.protocols :refer [CollReduce coll-reduce]]
+            [clojure.core.reducers :refer [CollFold coll-fold]]))
 
 ; This code follows Day 2 within Chapter 3.
 ; To start, utilize the function merge-with to combine parallel word count operations.
@@ -20,5 +22,22 @@
   (r/map (partial * 2) (range 1 10))) ; r/map is a recipe to generate a sequence of square numbers
 (reduce conj [] mult-2-map)
 
-; Protocols in clojure
+; Making our own reducer
+(defn my-reduce
+  ([f coll] (coll-reduce coll f))
+  ([f init coll] (coll-reduce coll f init)))
 
+(defn make-reducer [reducible transform-fn]
+  (reify ; similar in Java to making a new anonymous instance of an interface
+    CollReduce
+    (coll-reduce [_ f1]
+      (coll-reduce reducible (transform-fn f1) (f1)))
+    (coll-reduce [_ f1 init]
+      (coll-reduce reducible (transform-fn f1) init))))
+
+(defn my-map [map-fn reducible]
+  (make-reducer reducible
+                (fn [reduce-fn]
+                  (println reduce-fn) ; just to see wha the reduce-fn
+                  (fn [acc val]
+                    (reduce-fn acc (map-fn val))))))
