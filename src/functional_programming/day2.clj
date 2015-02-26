@@ -29,6 +29,10 @@
 
 (defn make-reducer [reducible transform-fn]
   (reify ; similar in Java to making a new anonymous instance of an interface
+    CollFold ; added the coll-fold to make-reducer
+    (coll-fold [_ n combine-fn reduce-fn]
+      (coll-fold reducible n combine-fn (transform-fn reduce-fn)))
+    
     CollReduce
     (coll-reduce [_ f1]
       (coll-reduce reducible (transform-fn f1) (f1)))
@@ -41,3 +45,12 @@
                   (println reduce-fn) ; just to see wha the reduce-fn
                   (fn [acc val]
                     (reduce-fn acc (map-fn val))))))
+
+(defn my-fold
+  ([reduce-fn coll]
+    (my-fold reduce-fn reduce-fn coll)) ; default combines and reduces with the same function
+  ([combine-fn reduce-fn coll]
+    (my-fold 512 combine-fn reduce-fn coll))
+  ([n combine-fn reduce-fn coll]
+    (println "combine: " combine-fn " reduce: " reduce-fn " coll: " coll)
+    (coll-fold coll n combine-fn reduce-fn)))
