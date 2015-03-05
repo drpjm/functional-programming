@@ -21,16 +21,16 @@
   (r/map (partial * 2) (range 1 10))) ; r/map is a recipe to generate a sequence of square numbers
 (reduce conj [] mult-2-map)
 
-; Testing my-fold and my-map to perform a fold-reduce
+; Testing fold2 and map2 to perform a fold-reduce
 (let [v (into [] (range 1000))]
-  (my-fold + (my-map (partial * 3) v)))
+  (fold2 + (map2 (partial * 3) v)))
 
 (defn parallel-frequencies [coll]
-  (my-fold
+  (fold2
     (partial merge-with +)
     (fn counter-fn [counts k]
       (assoc counts k (inc (get counts k 0))))
     coll))
 
-(let [nums (into [] (take 10000000 (repeatedly (fn rand20-fn [] (rand-int 20)))))] ; lots of random ints!
+(let [nums (into [] (take 1000000 (repeatedly (fn rand20-fn [] (rand-int 20)))))] ; lots of random ints!
   (parallel-frequencies nums))

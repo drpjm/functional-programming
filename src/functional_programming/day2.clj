@@ -20,19 +20,30 @@
     (coll-reduce [_ f1 init]
       (coll-reduce reducible (transform-fn f1) init))))
 
-(defn my-map [map-fn reducible]
+(defn map2 [map-fn reducible]
   "Returns a reducer that performs map."
   (make-reducer reducible
-                (fn [reduce-fn]
-;                  (println reduce-fn) ; just to see what the reduce-fn is...
+                (fn [reduce-fn] ; This is the "transform function" from Rich Hickey's talk.
                   (fn [acc val]
                     (reduce-fn acc (map-fn val))))))
 
-(defn my-fold
+(defn fold2
   ([reduce-fn coll]
-    (my-fold reduce-fn reduce-fn coll)) ; default combines and reduces with the same function
+    (fold2 reduce-fn reduce-fn coll)) ; default combines and reduces with the same function
   ([combine-fn reduce-fn coll]
-    (my-fold 512 combine-fn reduce-fn coll))
+    (fold2 512 combine-fn reduce-fn coll))
   ([n combine-fn reduce-fn coll]
     (println "combine: " combine-fn " reduce: " reduce-fn)
     (coll-fold coll n combine-fn reduce-fn)))
+
+; Exercises
+; Flatten needs to determine if an input element is a sequence. If so, it needs to call
+; coll-reduce on the result of flatten2. If the element is not a sequence, it applies the 
+; reducingfunction to current acc and val. 
+(defn flatten2 [coll]
+  (make-reducer coll
+                (fn [reduce-fn]
+                  (fn [acc val]
+                    (if (sequential? val)
+                      (coll-reduce (flatten2 val) reduce-fn acc)
+                      (reduce-fn acc val))))))
