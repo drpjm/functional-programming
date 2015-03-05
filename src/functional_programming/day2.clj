@@ -47,3 +47,19 @@
                     (if (sequential? val)
                       (coll-reduce (flatten2 val) reduce-fn acc)
                       (reduce-fn acc val))))))
+
+; Applies the reduce-fn only if the input val passes pred-fn.
+(defn filter2 [pred-fn coll]
+  (make-reducer coll
+                (fn [reduce-fn]
+                  (fn [acc val]
+                    (if (pred-fn val)
+                      (reduce-fn acc val)
+                      acc)))))
+
+; Applies a reduce on the current accumulation using the reduce-fn and the user supplied f on input val.
+(defn mapcat2 [f coll]
+  (make-reducer coll
+                (fn [reduce-fn]
+                  (fn [acc val]
+                    (reduce reduce-fn acc (f val))))))
